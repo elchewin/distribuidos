@@ -1,0 +1,49 @@
+version: "3.8"
+networks:
+  asgard:
+    driver: bridge
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - REDIS_HOST=redis
+      - PG_HOST=postgres
+      - PG_USER=user
+      - PG_PASSWORD=password
+      - PG_DATABASE=Corredores
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./tarea.js:/app/tarea.js
+    networks:
+      - asgard
+  redis:
+    image: bitnami/redis:6.0.16
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - ./data/redis:/bitnami/redis/data
+    ports:
+      - "6379:6379"
+    networks:
+      - asgard
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=Corredores
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./dataset_corredores.csv:/app/dataset_corredores.csv
+    ports:
+      - "5432:5432"
+    networks:
+      - asgard
